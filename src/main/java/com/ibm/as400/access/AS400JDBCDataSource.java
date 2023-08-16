@@ -104,15 +104,6 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
     private static final int MAX_THRESHOLD = 16777216;                  // Maximum threshold (bytes). @A3C, @A4A
     static final int MAX_SCALE = 63;                            // Maximum decimal scale
 
-    // socket options to store away in JNDI
-    private static final String SOCKET_KEEP_ALIVE = "soKeepAlive"; // @F1A
-    private static final String SOCKET_RECEIVE_BUFFER_SIZE = "soReceiveBufferSize"; // @F1A
-    private static final String SOCKET_SEND_BUFFER_SIZE = "soSendBufferSize"; // @F1A
-    private static final String SOCKET_LINGER = "soLinger"; // @F1A
-    private static final String SOCKET_TIMEOUT = "soTimeout"; // @F1A
-    private static final String SOCKET_LOGIN_TIMEOUT = "loginTimeout"; // @st3
-    private static final String SOCKET_TCP_NO_DELAY = "soTCPNoDelay"; // @F1A
-
     // Data source properties.
     transient private AS400 as400_;                           // AS400 object used to store and encrypt the password.
     // @J2d private String databaseName_ = "";                // Database name. @A6C
@@ -386,26 +377,8 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
                 // set the savePasswordWhenSerialized_ flag
                 savePasswordWhenSerialized_ = value.equals(TRUE_) ? true : false;
             }
-            else if (property.equals(SOCKET_KEEP_ALIVE)) {
-                sockProps_.setKeepAlive((value.equals(TRUE_)? true : false));
-            }
-            else if (property.equals(SOCKET_RECEIVE_BUFFER_SIZE)) {
-                sockProps_.setReceiveBufferSize(Integer.parseInt(value));
-            }
-            else if (property.equals(SOCKET_SEND_BUFFER_SIZE)) {
-                sockProps_.setSendBufferSize(Integer.parseInt(value));
-            }
-            else if (property.equals(SOCKET_LINGER)) {
-                sockProps_.setSoLinger(Integer.parseInt(value));
-            }
-            else if (property.equals(SOCKET_TIMEOUT)) {
-                sockProps_.setSoTimeout(Integer.parseInt(value));
-            }
-            else if (property.equals(SOCKET_LOGIN_TIMEOUT)) {        //@st3
-                sockProps_.setLoginTimeout(Integer.parseInt(value)); //@st3
-            }
-            else if (property.equals(SOCKET_TCP_NO_DELAY)) {
-                sockProps_.setTcpNoDelay((value.equals(TRUE_)? true : false));
+            else if (SocketProperties.isSocketProperty(property)) {
+                sockProps_.restore(property, value);
             }
             else
             {
@@ -1198,13 +1171,7 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
         }
 
         // Add the Socket options
-        if (sockProps_.keepAliveSet_) ref.add(new StringRefAddr(SOCKET_KEEP_ALIVE, (sockProps_.keepAlive_ ? "true" : "false")));
-        if (sockProps_.receiveBufferSizeSet_) ref.add(new StringRefAddr(SOCKET_RECEIVE_BUFFER_SIZE, Integer.toString(sockProps_.receiveBufferSize_)));
-        if (sockProps_.sendBufferSizeSet_) ref.add(new StringRefAddr(SOCKET_SEND_BUFFER_SIZE, Integer.toString(sockProps_.sendBufferSize_)));
-        if (sockProps_.soLingerSet_) ref.add(new StringRefAddr(SOCKET_LINGER, Integer.toString(sockProps_.soLinger_)));
-        if (sockProps_.soTimeoutSet_) ref.add(new StringRefAddr(SOCKET_TIMEOUT, Integer.toString(sockProps_.soTimeout_)));
-        if (sockProps_.loginTimeoutSet_) ref.add(new StringRefAddr(SOCKET_LOGIN_TIMEOUT, Integer.toString(sockProps_.loginTimeout_))); //@st3
-        if (sockProps_.tcpNoDelaySet_) ref.add(new StringRefAddr(SOCKET_TCP_NO_DELAY, (sockProps_.tcpNoDelay_ ? "true" : "false")));
+        sockProps_.save(ref);
 
         // Add the data source properties.  (unique constant identifiers for storing in JNDI).
         if (getDatabaseName() != null)

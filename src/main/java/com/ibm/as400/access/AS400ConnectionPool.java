@@ -25,6 +25,10 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
+import javax.naming.NamingException;
+import javax.naming.Reference;
+import javax.naming.Referenceable;
+import javax.naming.StringRefAddr;
 
 /**
  *  Manages a pool of AS400 objects.  A connection pool is used to 
@@ -84,7 +88,7 @@ import java.io.ObjectInputStream;
  *    <li>PropertyChangeEvent</li>
  *  </ul>
  **/
-public class AS400ConnectionPool extends ConnectionPool implements Serializable
+public class AS400ConnectionPool extends ConnectionPool implements Serializable, Referenceable
 {
   static final long serialVersionUID = 4L;
 
@@ -114,6 +118,16 @@ public class AS400ConnectionPool extends ConnectionPool implements Serializable
     initializeTransient();
   }
 
+    /**
+     * Constructs an AS400ConnectionPool from the specified Reference object.
+     *
+     * @param reference to retrieve the ConnectionPool properties from
+     */
+    AS400ConnectionPool(Reference reference)
+    {
+        super();
+        initializeTransient();
+    }
 
   /**
    * Remove any connections that have exceeded maximum inactivity time, replace any 
@@ -2066,5 +2080,30 @@ public class AS400ConnectionPool extends ConnectionPool implements Serializable
     }
     socketProperties_ = properties;
   }
+
+    /**
+     * Returns the Reference object for the pool object. This is used by
+     * JNDI when bound in a JNDI naming service. Contains the information
+     * necessary to reconstruct the pool object when it is later
+     * retrieved from JNDI via an object factory.
+     *
+     * @return A Reference object of the pool object.
+     * @exception NamingException If a naming error occurs in resolving the
+     * object.
+     *
+     */
+    @Override
+    public Reference getReference() throws NamingException {
+        Trace.log(Trace.INFORMATION, "AS400ConnectionPool.getReference"); 
+
+        Reference ref = new Reference(this.getClass().getName(),
+                                      "com.ibm.as400.access.AS400ConnectionPoolFactory",
+                                      null);
+
+        // Add the Socket options
+        socketProperties_.save(ref);
+
+        return ref;
+    }
 
 }
