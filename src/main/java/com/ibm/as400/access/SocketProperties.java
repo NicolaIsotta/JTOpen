@@ -87,25 +87,29 @@ public class SocketProperties implements Serializable
     @Override
     public boolean equals(Object other)
     {
-    	if (other == null || !(other instanceof SocketProperties)) return false; 
-       try {
-         SocketProperties props = (SocketProperties)other;
-         if (keepAliveSet_         == props.keepAliveSet_ &&
-             keepAlive_            == props.keepAlive_ &&
-             receiveBufferSizeSet_ == props.receiveBufferSizeSet_ &&
-             receiveBufferSize_    == props.receiveBufferSize_ &&
-             sendBufferSizeSet_    == props.sendBufferSizeSet_ &&
-             sendBufferSize_       == props.sendBufferSize_ &&
-             soLingerSet_          == props.soLingerSet_ &&
-             soLinger_             == props.soLinger_ &&
-             soTimeoutSet_         == props.soTimeoutSet_ &&
-             soTimeout_            == props.soTimeout_ &&
-             tcpNoDelaySet_        == props.tcpNoDelaySet_ &&
-             tcpNoDelay_           == props.tcpNoDelay_)
-           return true;
-         else return false;
-      }
-      catch (Throwable e) { return false; }
+    	if (other == null || !(other instanceof SocketProperties)) {
+            return false;
+        }
+        SocketProperties props = (SocketProperties) other;
+        if (keepAliveSet_         == props.keepAliveSet_ &&
+            keepAlive_            == props.keepAlive_ &&
+            receiveBufferSizeSet_ == props.receiveBufferSizeSet_ &&
+            receiveBufferSize_    == props.receiveBufferSize_ &&
+            sendBufferSizeSet_    == props.sendBufferSizeSet_ &&
+            sendBufferSize_       == props.sendBufferSize_ &&
+            soLingerSet_          == props.soLingerSet_ &&
+            soLinger_             == props.soLinger_ &&
+            soTimeoutSet_         == props.soTimeoutSet_ &&
+            soTimeout_            == props.soTimeout_ &&
+            loginTimeoutSet_      == props.loginTimeoutSet_ &&
+            loginTimeout_         == props.loginTimeout_ &&
+            tcpNoDelaySet_        == props.tcpNoDelaySet_ &&
+            tcpNoDelay_           == props.tcpNoDelay_) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
   /**

@@ -24,8 +24,11 @@ import java.util.Enumeration;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.naming.NamingException;
+import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
@@ -123,10 +126,89 @@ public class AS400ConnectionPool extends ConnectionPool implements Serializable,
      *
      * @param reference to retrieve the ConnectionPool properties from
      */
-    AS400ConnectionPool(Reference reference)
-    {
+    AS400ConnectionPool(Reference reference) {
         super();
         initializeTransient();
+
+        Objects.requireNonNull(reference, "reference");
+        Enumeration<RefAddr> list = reference.getAll();
+        while (list.hasMoreElements()) {
+            RefAddr refAddr = list.nextElement();
+            String property = refAddr.getType();
+            String value = (String) refAddr.getContent();
+            switch (property) {
+                case "ccsid":
+                    setCCSID(Integer.parseInt(value));
+                    break;
+                case "cleanupInterval":
+                    setCleanupInterval(Long.parseLong(value));
+                    break;
+                case "maxConnections":
+                    setMaxConnections(Integer.parseInt(value));
+                    break;
+                case "maxInactivity":
+                    setMaxInactivity(Long.parseLong(value));
+                    break;
+                case "maxLifetime":
+                    setMaxLifetime(Long.parseLong(value));
+                    break;
+                case "maxUseCount":
+                    setMaxUseCount(Integer.parseInt(value));
+                    break;
+                case "maxUseTime":
+                    setMaxUseTime(Long.parseLong(value));
+                    break;
+                case "pretestConnections":
+                    setPretestConnections(Boolean.parseBoolean(value));
+                    break;
+                case "runMaintenance":
+                    setRunMaintenance(Boolean.parseBoolean(value));
+                    break;
+                case "useThreads":
+                    setThreadUsed(Boolean.parseBoolean(value));
+                    break;
+                default:
+                    if (SocketProperties.isSocketProperty(property)) {
+                        socketProperties_.restore(property, value);
+                    }
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Returns the Reference object for the pool object. This is used by
+     * JNDI when bound in a JNDI naming service. Contains the information
+     * necessary to reconstruct the pool object when it is later
+     * retrieved from JNDI via an object factory.
+     *
+     * @return A Reference object of the pool object.
+     * @exception NamingException If a naming error occurs in resolving the
+     * object.
+     *
+     */
+    @Override
+    public Reference getReference() throws NamingException {
+        Trace.log(Trace.INFORMATION, "AS400ConnectionPool.getReference"); 
+
+        Reference ref = new Reference(this.getClass().getName(),
+                                     AS400ObjectFactory.class.getName(),
+                                      null);
+
+        ref.add(new StringRefAddr("ccsid", Integer.toString(getCCSID())));
+        ref.add(new StringRefAddr("cleanupInterval", Long.toString(getCleanupInterval())));
+        ref.add(new StringRefAddr("maxConnections", Integer.toString(getMaxConnections())));
+        ref.add(new StringRefAddr("maxInactivity", Long.toString(getMaxInactivity())));
+        ref.add(new StringRefAddr("maxLifetime", Long.toString(getMaxLifetime())));
+        ref.add(new StringRefAddr("maxUseCount", Integer.toString(getMaxUseCount())));
+        ref.add(new StringRefAddr("pretestConnections", Boolean.toString(isPretestConnections())));
+        ref.add(new StringRefAddr("runMaintenance", Boolean.toString(isRunMaintenance())));
+        ref.add(new StringRefAddr("threadUsed", Boolean.toString(isThreadUsed())));
+
+        // Add the Socket options
+        socketProperties_.save(ref);
+
+        return ref;
     }
 
   /**
@@ -2080,30 +2162,5 @@ public class AS400ConnectionPool extends ConnectionPool implements Serializable,
     }
     socketProperties_ = properties;
   }
-
-    /**
-     * Returns the Reference object for the pool object. This is used by
-     * JNDI when bound in a JNDI naming service. Contains the information
-     * necessary to reconstruct the pool object when it is later
-     * retrieved from JNDI via an object factory.
-     *
-     * @return A Reference object of the pool object.
-     * @exception NamingException If a naming error occurs in resolving the
-     * object.
-     *
-     */
-    @Override
-    public Reference getReference() throws NamingException {
-        Trace.log(Trace.INFORMATION, "AS400ConnectionPool.getReference"); 
-
-        Reference ref = new Reference(this.getClass().getName(),
-                                      "com.ibm.as400.access.AS400ConnectionPoolFactory",
-                                      null);
-
-        // Add the Socket options
-        socketProperties_.save(ref);
-
-        return ref;
-    }
 
 }
