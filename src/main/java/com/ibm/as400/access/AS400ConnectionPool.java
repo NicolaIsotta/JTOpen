@@ -95,6 +95,17 @@ public class AS400ConnectionPool extends ConnectionPool implements Serializable,
 {
   static final long serialVersionUID = 4L;
 
+  private static final String CCSID_PROPERTY = "ccsid";
+  private static final String CLEANUP_INTERVAL_PROPERTY = "cleanupInterval";
+  private static final String MAX_CONNECTIONS_PROPERTY = "maxConnections";
+  private static final String MAX_INACTIVITY_PROPERTY = "maxInactivity";
+  private static final String MAX_LIFETIME_PROPERTY = "maxLifetime";
+  private static final String MAX_USE_COUNT_PROPERTY = "maxUseCount";
+  private static final String MAX_USE_TIME_PROPERTY = "maxUseTime";
+  private static final String PRETEST_CONNECTIONS_PROPERTY = "pretestConnections";
+  private static final String RUN_MAINTENANCE_PROPERTY = "runMaintenance";
+  private static final String THREAD_USED_PROPERTY = "threadUsed";
+
   /**
    Indicates that the CCSID used for new connections is the same as the system default CCSID.
    **/
@@ -137,34 +148,34 @@ public class AS400ConnectionPool extends ConnectionPool implements Serializable,
             String property = refAddr.getType();
             String value = (String) refAddr.getContent();
             switch (property) {
-                case "ccsid":
+                case CCSID_PROPERTY:
                     setCCSID(Integer.parseInt(value));
                     break;
-                case "cleanupInterval":
+                case CLEANUP_INTERVAL_PROPERTY:
                     setCleanupInterval(Long.parseLong(value));
                     break;
-                case "maxConnections":
+                case MAX_CONNECTIONS_PROPERTY:
                     setMaxConnections(Integer.parseInt(value));
                     break;
-                case "maxInactivity":
+                case MAX_INACTIVITY_PROPERTY:
                     setMaxInactivity(Long.parseLong(value));
                     break;
-                case "maxLifetime":
+                case MAX_LIFETIME_PROPERTY:
                     setMaxLifetime(Long.parseLong(value));
                     break;
-                case "maxUseCount":
+                case MAX_USE_COUNT_PROPERTY:
                     setMaxUseCount(Integer.parseInt(value));
                     break;
-                case "maxUseTime":
+                case MAX_USE_TIME_PROPERTY:
                     setMaxUseTime(Long.parseLong(value));
                     break;
-                case "pretestConnections":
+                case PRETEST_CONNECTIONS_PROPERTY:
                     setPretestConnections(Boolean.parseBoolean(value));
                     break;
-                case "runMaintenance":
+                case RUN_MAINTENANCE_PROPERTY:
                     setRunMaintenance(Boolean.parseBoolean(value));
                     break;
-                case "useThreads":
+                case THREAD_USED_PROPERTY:
                     setThreadUsed(Boolean.parseBoolean(value));
                     break;
                 default:
@@ -195,15 +206,16 @@ public class AS400ConnectionPool extends ConnectionPool implements Serializable,
                                      AS400ObjectFactory.class.getName(),
                                       null);
 
-        ref.add(new StringRefAddr("ccsid", Integer.toString(getCCSID())));
-        ref.add(new StringRefAddr("cleanupInterval", Long.toString(getCleanupInterval())));
-        ref.add(new StringRefAddr("maxConnections", Integer.toString(getMaxConnections())));
-        ref.add(new StringRefAddr("maxInactivity", Long.toString(getMaxInactivity())));
-        ref.add(new StringRefAddr("maxLifetime", Long.toString(getMaxLifetime())));
-        ref.add(new StringRefAddr("maxUseCount", Integer.toString(getMaxUseCount())));
-        ref.add(new StringRefAddr("pretestConnections", Boolean.toString(isPretestConnections())));
-        ref.add(new StringRefAddr("runMaintenance", Boolean.toString(isRunMaintenance())));
-        ref.add(new StringRefAddr("threadUsed", Boolean.toString(isThreadUsed())));
+        ref.add(new StringRefAddr(CCSID_PROPERTY, Integer.toString(getCCSID())));
+        ref.add(new StringRefAddr(CLEANUP_INTERVAL_PROPERTY, Long.toString(getCleanupInterval())));
+        ref.add(new StringRefAddr(MAX_CONNECTIONS_PROPERTY, Integer.toString(getMaxConnections())));
+        ref.add(new StringRefAddr(MAX_INACTIVITY_PROPERTY, Long.toString(getMaxInactivity())));
+        ref.add(new StringRefAddr(MAX_LIFETIME_PROPERTY, Long.toString(getMaxLifetime())));
+        ref.add(new StringRefAddr(MAX_USE_COUNT_PROPERTY, Integer.toString(getMaxUseCount())));
+        ref.add(new StringRefAddr(MAX_USE_TIME_PROPERTY, Long.toString(getMaxUseTime())));
+        ref.add(new StringRefAddr(PRETEST_CONNECTIONS_PROPERTY, Boolean.toString(isPretestConnections())));
+        ref.add(new StringRefAddr(RUN_MAINTENANCE_PROPERTY, Boolean.toString(isRunMaintenance())));
+        ref.add(new StringRefAddr(THREAD_USED_PROPERTY, Boolean.toString(isThreadUsed())));
 
         // Add the Socket options
         socketProperties_.save(ref);
