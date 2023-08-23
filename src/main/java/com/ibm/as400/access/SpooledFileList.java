@@ -18,7 +18,7 @@ import java.beans.PropertyVetoException;
 /**
  * Builds a list of objects of type SpooledFile.
  * The list can be filtered by formtype, output queue, user, ending date,
- * ending time, or user data.
+ * ending time, user data or spool name.
  *
  *@see SpooledFile
  **/ 
@@ -38,7 +38,8 @@ implements java.io.Serializable
     private static final String START_DATE_FILTER = "startDateFilter";
     private static final String START_TIME_FILTER = "startTimeFilter";
     private static final String JOB_SYSTEM_FILTER = "jobSystemFilter";
-   
+    private static final String SPOOL_NAME_FILTER = "spoolNameFilter";
+
     /**
      * Constructs a SpooledFileList object. The system
      * must be set later. This constructor is provided for visual
@@ -228,8 +229,20 @@ implements java.io.Serializable
        NPCPSelSplF selectionCP = (NPCPSelSplF)getSelectionCP();
        return( selectionCP.getStartTime() );
    }
-   
-   
+
+    /**
+     * Returns the spool name list filter.
+     *
+     * @return spool name filter
+     */
+    public String getSpoolNameFilter() {
+        // The selection code point is always present, the spoolName Filter
+        // may not have been set. If empty, getSpoolName() will return
+        // an empty string.
+
+        NPCPSelSplF selectionCP = (NPCPSelSplF) getSelectionCP();
+        return selectionCP.getSpoolName();
+    }
 
 
     /**
@@ -716,6 +729,55 @@ implements java.io.Serializable
         // Notify any property change listeners.
         changes.firePropertyChange( USER_DATA_FILTER,
                                     oldUserDataFilter, userDataFilter );
+    }
+
+    /**
+     * Sets the spool name list filter.
+     *
+     * @param spoolNameFilter The name the spooled file must have for it to be
+     * included in the list. The value can be any specific value or the special
+     * value *ALL. The value cannot be greater than 10 characters. The default
+     * is *ALL.
+     *
+     * @exception PropertyVetoException If the change is vetoed.
+     *
+     */
+    public void setSpoolNameFilter(String spoolNameFilter)
+            throws PropertyVetoException {
+        if (spoolNameFilter == null) {
+            Trace.log(Trace.ERROR, "Parameter 'spoolNameFilter' is null");
+            throw new NullPointerException(SPOOL_NAME_FILTER);
+        }
+
+        // Allow a length of 0 to remove the filter from the
+        // selection code point.
+        if (spoolNameFilter.length() > 10) {
+            Trace.log(Trace.ERROR, "Parameter 'spoolNameFilter' is greater than 10 characters in length.");
+            throw new ExtendedIllegalArgumentException(
+                    "spoolNameFilter(" + spoolNameFilter + ")",
+                    ExtendedIllegalArgumentException.LENGTH_NOT_VALID);
+        }
+
+        String oldSpoolNameFilter = getSpoolNameFilter();
+
+        // Tell any vetoers about the change. If anyone objects
+        // we let the PropertyVetoException propagate back to
+        // our caller.
+        vetos.fireVetoableChange(SPOOL_NAME_FILTER,
+                oldSpoolNameFilter, spoolNameFilter);
+
+        // No one vetoed, make the change.
+        NPCPSelSplF selectionCP = (NPCPSelSplF) getSelectionCP();
+        selectionCP.setSpoolName(spoolNameFilter);
+
+        // Propagate any change to ImplRemote if necessary...
+        if (impl_ != null) {
+            impl_.setFilter("spoolName", spoolNameFilter);
+        }
+
+        // Notify any property change listeners.
+        changes.firePropertyChange(SPOOL_NAME_FILTER,
+                oldSpoolNameFilter, spoolNameFilter);
     }
 
 } // SpooledFileList class
