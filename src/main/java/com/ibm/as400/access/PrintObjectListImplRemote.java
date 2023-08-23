@@ -690,57 +690,66 @@ abstract class PrintObjectListImplRemote implements PrintObjectListImpl, Runnabl
 
   public void setFilter(String filterType, String filter)
   {
-    if (filterType.equals("resource"))
-    {
-      NPCPSelRes selectionCP = (NPCPSelRes)getSelectionCP();
-      selectionCP.setResource(filter);
+        switch (filterType) {
+            case "resource": {
+                NPCPSelRes selectionCP = (NPCPSelRes) getSelectionCP();
+                selectionCP.setResource(filter);
+                break;
+            }
+            case "queue": {
+                NPCPSelOutQ selectionCP = (NPCPSelOutQ) getSelectionCP();
+                selectionCP.setQueue(filter);
+                break;
+            }
+            case "printer": {
+                NPCPSelPrtD selectionCP = (NPCPSelPrtD) getSelectionCP();
+                selectionCP.setPrinter(filter);
+                break;
+            }
+            case "printerFile": {
+                NPCPSelPrtF selectionCP = (NPCPSelPrtF) getSelectionCP();
+                selectionCP.setPrinterFile(filter);
+                break;
+            }
+            case "formType": {
+                NPCPSelSplF selectionCP = (NPCPSelSplF) getSelectionCP();
+                selectionCP.setFormType(filter);
+                break;
+            }
+            case "spooledFileQueue": {
+                NPCPSelSplF selectionCP = (NPCPSelSplF) getSelectionCP();
+                selectionCP.setQueue(filter);
+                break;
+            }
+            case "user": {
+                NPCPSelSplF selectionCP = (NPCPSelSplF) getSelectionCP();
+                selectionCP.setUser(filter);
+                break;
+            }
+            case "userData": {
+                NPCPSelSplF selectionCP = (NPCPSelSplF) getSelectionCP();
+                selectionCP.setUserData(filter);
+                break;
+            }
+            case "spoolName": {
+                NPCPSelSplF selectionCP = (NPCPSelSplF) getSelectionCP();
+                selectionCP.setSpoolName(filter);
+                break;
+            }
+            case "writerJobQueue": {
+                NPCPSelWrtJ selectionCP = (NPCPSelWrtJ) getSelectionCP();
+                selectionCP.setQueue(filter);
+                break;
+            }
+            case "writer": {
+                NPCPSelWrtJ selectionCP = (NPCPSelWrtJ) getSelectionCP();
+                selectionCP.setWriter(filter);
+                break;
+            }
+            default:
+                break;
+        }
     }
-    if (filterType.equals("queue"))
-    {
-      NPCPSelOutQ selectionCP = (NPCPSelOutQ)getSelectionCP();
-      selectionCP.setQueue(filter);
-    }
-    else if (filterType.equals("printer"))
-    {
-      NPCPSelPrtD selectionCP = (NPCPSelPrtD)getSelectionCP();
-      selectionCP.setPrinter(filter);
-    }
-    else if (filterType.equals("printerFile"))
-    {
-      NPCPSelPrtF selectionCP = (NPCPSelPrtF)getSelectionCP();
-      selectionCP.setPrinterFile(filter);
-    }
-    else if (filterType.equals("formType"))
-    {
-      NPCPSelSplF selectionCP = (NPCPSelSplF)getSelectionCP();
-      selectionCP.setFormType(filter);
-    }
-    else if (filterType.equals("spooledFileQueue"))
-    {
-      NPCPSelSplF selectionCP = (NPCPSelSplF)getSelectionCP();
-      selectionCP.setQueue(filter);
-    }
-    else if (filterType.equals("user"))
-    {
-      NPCPSelSplF selectionCP = (NPCPSelSplF)getSelectionCP();
-      selectionCP.setUser(filter);
-    }
-    else if (filterType.equals("userData"))
-    {
-      NPCPSelSplF selectionCP = (NPCPSelSplF)getSelectionCP();
-      selectionCP.setUserData(filter);
-    }
-    else if (filterType.equals("writerJobQueue"))
-    {
-      NPCPSelWrtJ selectionCP = (NPCPSelWrtJ)getSelectionCP();
-      selectionCP.setQueue(filter);
-    }
-    else if (filterType.equals("writer"))
-    {
-      NPCPSelWrtJ selectionCP = (NPCPSelWrtJ)getSelectionCP();
-      selectionCP.setWriter(filter);
-    }
-  }
 
 
   public void setPrintObjectListAttrs(NPCPAttributeIDList attrsToRetrieve,

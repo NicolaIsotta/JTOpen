@@ -261,4 +261,19 @@ class SpooledFileListImplRemote extends PrintObjectListImplRemote
         selectionCP.setUserData(userDataFilter);
     }
 
+    /**
+     * Sets the spool name list filter.
+     *
+     * @param spoolNameFilter The name the spooled file must have for it to
+     * be included in the list. The value can be any specific value or the
+     * special value *ALL. The value cannot be greater than 10 characters. The
+     * default is *ALL.
+     *
+     */
+    public void setSpoolNameFilter(String spoolNameFilter)
+    {
+        NPCPSelSplF selectionCP = (NPCPSelSplF) getSelectionCP();
+        selectionCP.setSpoolName(spoolNameFilter);
+    }
+
 } 

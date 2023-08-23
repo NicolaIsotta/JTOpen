@@ -36,6 +36,7 @@ class NPCPSelSplF extends NPCPSelection implements Cloneable
     static final String STR_ALLOUTQLIBS = "*ALL";
     static final String STR_BLANKOUTQLIB = "";
 
+    @Override
     protected Object clone()
     {
         NPCPSelSplF cp = new NPCPSelSplF(this);
@@ -212,9 +213,23 @@ class NPCPSelSplF extends NPCPSelection implements Cloneable
         } else {
             return endTime;
         }
-   }
-        
-    
+    }
+
+    /**
+     * gets the spool name filter
+     *
+     * @returns the filter for the spool name or an empty string if it isn't
+     * set.
+     */
+    String getSpoolName() {
+        String spoolName = getStringValue(PrintObject.ATTR_SPOOLFILE);
+        if (spoolName == null) {
+            return emptyString;
+        } else {
+            return spoolName;
+        }
+    }
+
    /**
     * set formtype filter.
     * Removes the filter if formType is "".
@@ -373,5 +388,16 @@ class NPCPSelSplF extends NPCPSelection implements Cloneable
         }
     }
 
-}
+    /**
+     * set spool name filter. Removes the filter if spoolName is "".
+     *
+     */
+    void setSpoolName(String spoolName) {
+        if (spoolName.isEmpty()) {
+            removeAttribute(PrintObject.ATTR_SPOOLFILE);
+        } else {
+            setAttrValue(PrintObject.ATTR_SPOOLFILE, spoolName);
+        }
+    }
 
+}
