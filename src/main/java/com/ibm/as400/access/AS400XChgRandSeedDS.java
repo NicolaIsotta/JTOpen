@@ -20,14 +20,13 @@ import java.io.OutputStream;
 class AS400XChgRandSeedDS extends ClientAccessDataStream
 {
   private static final String copyright = "Copyright (C) 1997-2001 International Business Machines Corporation and others.";
-
+  
     AS400XChgRandSeedDS(int serverId)
     {
         super(new byte[28]);
         setLength(28);
         // Header ID replaced with Attributes.
-        //data_[4] = 0x01;  // Client Attributes, 1 means can use SHA-1. @AF2D 
-        data_[4] = 0x02;    // Client Attributes, 1 means can use SHA-2 512, password level 4. @AF2A
+        data_[4] = 0x03;    // Client Attributes, 1=SHA-1 PWD encryption, 2=pwdlvl 4 encryption, 3=client support aaf.
         // data_[5] = 0x00;  // Server Attributes.
         setServerID(serverId);
         // setCSInstance(0x00000000);

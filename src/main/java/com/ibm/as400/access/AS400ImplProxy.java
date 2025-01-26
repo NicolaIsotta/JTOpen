@@ -6,7 +6,7 @@
 //
 // The source code contained herein is licensed under the IBM Public License
 // Version 1.0, which has been approved by the Open Source Initiative.
-// Copyright (C) 1997-2006 International Business Machines Corporation and
+// Copyright (C) 1997-2024 International Business Machines Corporation and
 // others.  All rights reserved.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -39,12 +39,14 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Tell proxy server to listen for connection events.
+    @Override
     public void addConnectionListener(ConnectionListener listener)
     {
         connection_.addListener(pxId_, listener, "Connection");
     }
 
     // Map from CCSID to encoding string.
+    @Override
     public String ccsidToEncoding(int ccsid)
     {
         try
@@ -58,7 +60,15 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Change password.
+    @Override
     public SignonInfo changePassword(String systemName, boolean systemNameLocal, String userId, byte[] oldBytes, byte[] newBytes) throws AS400SecurityException, IOException
+    {
+        return changePassword(systemName, systemNameLocal, userId, oldBytes, newBytes, null);
+    }
+    
+    // Change password.
+    @Override
+    public SignonInfo changePassword(String systemName, boolean systemNameLocal, String userId, byte[] oldBytes, byte[] newBytes, char[] additionalAuthenticationFactor) throws AS400SecurityException, IOException
     {
         try
         {
@@ -71,10 +81,13 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Connect to service.
+    @Override
     public void connect(int service) throws AS400SecurityException, IOException
     {
       connect(service, -1, false); 
     }
+    
+    @Override
     public void connect(int service, int overridePort, boolean skipSignonServer) throws AS400SecurityException, IOException
     {
         try
@@ -89,35 +102,8 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
         }
     }
 
-    // Connect to port.
-    public Socket connectToPort(int port) throws AS400SecurityException, IOException
-    {
-        try
-        {
-            return (Socket)connection_.callMethod(pxId_, "connectToPort", new Class[] { Integer.TYPE }, new Object[] { Integer.valueOf(port) }).getReturnValue();
-        }
-        catch (InvocationTargetException e)
-        {
-            throw ProxyClientConnection.rethrow2(e);
-        }
-    }
-    //@N5A
-    public Socket connectToPort(int port,boolean forceNonLocalhost) throws AS400SecurityException, IOException
-    {
-        try
-        {
-            return (Socket)connection_.callMethod(pxId_, 
-                "connectToPort", 
-                new Class[] { Integer.TYPE, Boolean.TYPE }, 
-                new Object[] { Integer.valueOf(port), Boolean.valueOf(forceNonLocalhost) }).getReturnValue();
-        }
-        catch (InvocationTargetException e)
-        {
-            throw ProxyClientConnection.rethrow2(e);
-        }
-    }
-
     // Disconnect from service.
+    @Override
     public void disconnect(int service)
     {
         try
@@ -131,6 +117,7 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Exchange seeds with proxy server.
+    @Override
     public byte[] exchangeSeed(byte[] proxySeed)
     {
         try
@@ -144,6 +131,7 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Sets the raw bytes for the provided profile token.
+    @Override
     public void generateProfileToken(ProfileTokenCredential profileToken, String userIdentity) throws AS400SecurityException, IOException
     {
         try {
@@ -167,13 +155,14 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Sets the raw bytes for the provided profile token.
-    public void generateProfileToken(ProfileTokenCredential profileToken, String userId, CredentialVault vault, String gssName) throws AS400SecurityException, IOException, InterruptedException
+    @Override
+    public void generateProfileToken(ProfileTokenCredential profileToken, String userId, CredentialVault vault, char[] additionalAuthFactor, String gssName) throws AS400SecurityException, IOException, InterruptedException
     {
         try {
           ProxyReturnValue rv = connection_.callMethod (pxId_, "generateProfileToken",
-             new Class[] { ProfileTokenCredential.class, String.class, CredentialVault.class, String.class },
-             new Object[] { profileToken, userId, vault, gssName },
-             new boolean[] { true, false, false, false }, // indicate that 1st arg gets modified
+             new Class[] { ProfileTokenCredential.class, String.class, CredentialVault.class,char[].class ,String.class },
+             new Object[] { profileToken, userId, vault, additionalAuthFactor, gssName },
+             new boolean[] { true, false, false, false, false }, // indicate that 1st arg gets modified
              true);
           ProfileTokenCredential returnArg = (ProfileTokenCredential)rv.getArgument(0);
           profileToken.setToken(returnArg.getToken());
@@ -190,6 +179,7 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Get the jobs with which we are connected.
+    @Override
     public String[] getJobs(int service)
     {
         try
@@ -203,6 +193,7 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Get the port number for a service.
+    @Override
     public int getServicePort(String systemName, int service)
     {
         try
@@ -216,6 +207,7 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Check service connection.
+    @Override
     public boolean isConnected(int service)
     {
         try
@@ -229,6 +221,7 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Check connection's current status.
+    @Override
     public boolean isConnectionAlive()
     {
       try {
@@ -240,6 +233,7 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Check connection's current status.
+    @Override
     public boolean isConnectionAlive(int service)
     {
         try
@@ -253,6 +247,7 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Load converter into converter pool.
+    @Override
     public void newConverter(int ccsid) throws UnsupportedEncodingException
     {
         try
@@ -271,12 +266,14 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Remove connection listener dispatcher.
+    @Override
     public void removeConnectionListener(ConnectionListener listener)
     {
         connection_.removeListener(pxId_, listener, "Connection");
     }
 
     // Set the GSS credential.
+    @Override
     public void setGSSCredential(GSSCredential gssCredential)
     {
         try
@@ -290,6 +287,7 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Set the port for a service.
+    @Override
     public void setServicePort(String systemName, int service, int port)
     {
         try
@@ -303,6 +301,7 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Set the ports to default.
+    @Override
     public void setServicePortsToDefault(String systemName)
     {
         try
@@ -316,6 +315,7 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Set the significant instance variables for the AS400ImplRemote object.
+    @Override
     public void setState(SSLOptions useSSLConnection, boolean canUseNativeOptimization, boolean threadUsed, int ccsid, String nlv, SocketProperties socketProperties, String ddmRDB, boolean mustUseNetSockets, boolean mustUseSuppliedProfile, boolean mustAddLanguageLibrary)
     {
         try
@@ -326,6 +326,12 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
         {
             throw ProxyClientConnection.rethrow(e);
         }
+    }
+    
+    @Override
+    public SignonInfo setState(AS400Impl impl, CredentialVault credVault) 
+    {
+        return null;
     }
 
     // Sign-on.
@@ -350,6 +356,7 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
     // Skip Sign-on. /*@V1A*/
+    @Override
     public SignonInfo skipSignon(String systemName, boolean systemNameLocal, String userId, CredentialVault vault, String gssName) throws AS400SecurityException, IOException
     {
         try
@@ -363,28 +370,38 @@ class AS400ImplProxy extends AbstractProxyImpl implements AS400Impl
     }
 
 
-    //@Bidi-HCG3 start    
     private int bidiStringType = BidiStringType.DEFAULT;
     
     /**
      * Sets bidi string type of the connection. 
      * See <a href="BidiStringType.html">BidiStringType</a> for more information and valid values.
      */
+    @Override
     public void setBidiStringType(int bidiStringType){
-    	this.bidiStringType = bidiStringType;
+        this.bidiStringType = bidiStringType;
     }
     
     /**
      * Returns bidi string type of the connection. 
      * See <a href="BidiStringType.html">BidiStringType</a> for more information and valid values.
      */
+    @Override
     public int getBidiStringType(){
-    	return bidiStringType;
+        return bidiStringType;
     }
-    //@Bidi-HCG3 end
 
+    @Override
     public String getSystemName() {
       return connection_.getSystemName(); 
     }
-    
+
+	@Override
+	public void setVRM(int v, int r, int m) {
+		// Does nothing for the proxy class
+	}
+	
+    @Override
+    public void setAdditionalAuthenticationFactor(char[] additionalAuthFactor) {
+		// Does nothing for the proxy class
+    }
 }

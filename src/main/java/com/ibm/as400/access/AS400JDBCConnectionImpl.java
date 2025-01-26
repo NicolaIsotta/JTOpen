@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.concurrent.locks.Lock;
 /* ifdef JDBC40 */
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.Executor;
@@ -106,7 +107,6 @@ extends AS400JDBCConnection
 {
 
     private class CancelLock extends Object {}          //@C7A
-    private class HeldRequestsLock extends Object {}          //@C7A
 
     // Turn this flag on to prevent this Connection object from establishing an actual connection to the IBM i system.  This is useful when doing multi-threaded stress testing on the Toolbox's built-in JDBC connection pool manager, where we create/delete massive numbers of connections.
     // For production, this flag _must_ be set to 'false'.
@@ -194,7 +194,7 @@ extends AS400JDBCConnection
     // @E2D private ConverterImplRemote          graphicConverter_;
     // @E2D private boolean                     graphicConverterLoaded_;
     private Vector                      heldRequests_;                                  // @E5A
-    private HeldRequestsLock             heldRequestsLock_           = new HeldRequestsLock();     // @E5A@C7C
+    private Lock                         heldRequestsLock           = new ReentrantLock();     // @E5A@C7C
     private int                 holdability_  = AS400JDBCResultSet.HOLDABILITY_NOT_SPECIFIED; // @G4A
     private int                         id_;
     private AS400JDBCDatabaseMetaData   metaData_;
@@ -1908,9 +1908,6 @@ throws SQLException
       }                
     }
 
-    
- 
-
     /**
     Precompiles an SQL stored procedure call with optional input
     and output parameters and stores it in a CallableStatement
@@ -2888,8 +2885,8 @@ throws SQLException
             }                                                                               // @ECA
 
             DataStream actualRequest;                                                       // @E5A
-            synchronized(heldRequestsLock_)
-            {                                               // @E5A
+            try {
+            		heldRequestsLock.lock();
                 if (heldRequests_ != null)                                                  // @E5A
                     actualRequest = new DBConcatenatedRequestDS(heldRequests_, request);    // @E5A
                 else                                                                        // @E5A
@@ -2898,7 +2895,9 @@ throws SQLException
 
                 server_.send(actualRequest);                // @E5A @F7M
 //@P1D                requestPending_[id] = leavePending; //@P0A @F7M
-            }                                                                               // @E5A
+			} finally {
+				heldRequestsLock.unlock();
+			}
 
             // @E5D if (DEBUG_REQUEST_CHAINING_ == true) {
             //@P0D                if (leavePending)                                                           // @DAA
@@ -3032,11 +3031,14 @@ throws SQLException
                 request.compress();                                                         // @ECA
             }                                                                               // @ECA
 
-            synchronized(heldRequestsLock_)
+            try 
             {
+                heldRequestsLock.lock();
                 if (heldRequests_ == null)
                     heldRequests_ = new Vector();
                 heldRequests_.addElement(request);
+            } finally {
+                heldRequestsLock.unlock();
             }
 
             //@P0D requestPending_.set(id);                                                        // @DAC
@@ -3129,17 +3131,19 @@ throws SQLException
             }                                                                               // @ECA
 
             DataStream actualRequest;                                                       // @E5A
-            synchronized(heldRequestsLock_)
-            {                                               // @E5A
+            try {
+                heldRequestsLock.lock();
                 if (heldRequests_ != null)                                                  // @E5A
-                    actualRequest = new DBConcatenatedRequestDS(heldRequests_, request);    // @E5A
+                    actualRequest = new DBConcatenatedRequestDS(heldRequests_, request); // @E5A
                 else                                                                        // @E5A
                     actualRequest = request;                                                // @E5A
                 heldRequests_ = null;                                                       // @E5A
 
-                reply = (DBReplyRequestedDS)server_.sendAndReceive(actualRequest);          // @E5C @F7M
-                //@P0D requestPending_.clear(id);
-                //@P1D                requestPending_[id] = false; //@P0A @F7M
+				reply = (DBReplyRequestedDS) server_.sendAndReceive(actualRequest); // @E5C @F7M
+				// @P0D requestPending_.clear(id);
+				// @P1D requestPending_[id] = false; //@P0A @F7M
+			} finally {
+				heldRequestsLock.unlock();
             }                                                                               // @E5A
 
             reply.parse(dataCompression_);                                                  // @E5A
@@ -3217,17 +3221,19 @@ throws SQLException
                 request.compress();                                                         // @ECA
             }                                                                               // @ECA
 
-            DataStream actualRequest;                                                       // @E5A
-            synchronized(heldRequestsLock_)
-            {                                               // @E5A
-                if (heldRequests_ != null)                                                  // @E5A
-                    actualRequest = new DBConcatenatedRequestDS(heldRequests_, request);    // @E5A
-                else                                                                        // @E5A
-                    actualRequest = request;                                                // @E5A
-                heldRequests_ = null;                                                       // @E5A
-                //D2A- allowed correlation ID to be stored and used on multiple receive calls
-                correlationID_ = server_.send(actualRequest);
-                reply = (DBReplyRequestedDS)server_.receive(correlationID_);
+			DataStream actualRequest; // @E5A
+			try {
+				heldRequestsLock.lock();
+				if (heldRequests_ != null) // @E5A
+					actualRequest = new DBConcatenatedRequestDS(heldRequests_, request); // @E5A
+				else // @E5A
+					actualRequest = request; // @E5A
+				heldRequests_ = null; // @E5A
+				// D2A- allowed correlation ID to be stored and used on multiple receive calls
+				correlationID_ = server_.send(actualRequest);
+				reply = (DBReplyRequestedDS) server_.receive(correlationID_);
+			} finally {
+				heldRequestsLock.unlock();
             }                                                                               // @E5A
 
             reply.parse(dataCompression_);                                                  // @E5A
@@ -3267,9 +3273,12 @@ throws SQLException
         DBReplyRequestedDS reply = null;
         try{
             if(correlationID_ > 0){
-                synchronized(heldRequestsLock_)
+                try 
                 {
+                    heldRequestsLock.lock();
                     reply = (DBReplyRequestedDS)server_.receive(correlationID_);
+                } finally {
+					heldRequestsLock.unlock();
                 }
                 reply.parse(dataCompression_);
             }
@@ -3533,14 +3542,15 @@ throws SQLException
             if (portNumber == 0) { 
                 portNumber =  properties.getInt(JDProperties.PORTNUMBER);
             }
-            if (portNumber > 0) { 
-              as400.skipSignonServer = true;
+            if (portNumber > 0) {
+              as400.skipSignonServer_ = true;
               as400.connectService (AS400.DATABASE, portNumber);
               portNumberString = ""+portNumber; 
             } else { 
               as400.connectService (AS400.DATABASE);
             }
             systemName_ = as400.getSystemName();
+            as400PublicClassObj_ = as400;         /* Keep a reference so that the AS400 object is not garbage collected and finalized */ 
           }
           catch (AS400SecurityException e)
           {                            //@D5C
@@ -3580,7 +3590,7 @@ throws SQLException
           }                                                     //@dbldrvr
         }
 
-        setProperties (dataSourceUrl, properties, as400.getImpl(), false, as400.skipSignonServer);
+        setProperties (dataSourceUrl, properties, as400.getImpl(), false, as400.skipSignonServer_);
     }
 
 
@@ -4375,7 +4385,7 @@ throws SQLException
                           JDTrace.logInformation(this, "True auto-commit supported = true");
                           JDTrace.logInformation(this, "128 byte column names supported = true");
                           JDTrace.logInformation(this, "128 length schema names supported = true");
-                          JDTrace.logInformation(this, "client support 0x04000000 set");
+                          JDTrace.logInformation(this, "client support 0x04000000 boolean");
                           JDTrace.logInformation(this, "client support 0x02000000 multiple SQLCAs");
                       }
                       
@@ -4690,7 +4700,7 @@ throws SQLException
             // If we did not user the signon server, fix the signon information
             // in the as400 object. /*@V1A*/
             if (as400PublicClassObj_ != null) {
-              if (as400PublicClassObj_.skipSignonServer) {
+              if (as400PublicClassObj_.skipSignonServer_) {
                 as400PublicClassObj_.setSignonInfo(serverCCSID, vrm_, as400_.getUserId()) ; 
               }
             }

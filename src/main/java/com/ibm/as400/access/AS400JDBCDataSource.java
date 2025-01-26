@@ -223,7 +223,7 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
     public AS400JDBCDataSource()
     {
         initializeTransient();
-        properties_ = new JDProperties(null, null, null);
+        properties_ = new JDProperties(null, null, null, null);
         sockProps_ = new SocketProperties();
     }
 
@@ -270,6 +270,24 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
         setPassword(password);
     }
 
+    /**
+ *  Constructs an AS400JDBCDataSource object with the specified signon information.
+ *  @param serverName The name of the IBM i system.
+ *  @param user The user id.
+ *  @param password The user password.  The caller is responsible for clearing password after the constructor returns. 
+ *  @param additionalAuthenticationFactor.  The additional authentication factor.  The user must call connect() before
+ *    the additional authentication factor expires. 
+ **/
+ public AS400JDBCDataSource(String serverName, String user, char[] password, char[] additionalAuthenticationFactor)
+ {
+     this();
+
+     setServerName(serverName);
+     setUser(user);
+     setPassword(password);
+     setAdditionalAuthenticationFactor(additionalAuthenticationFactor);
+ }
+
 
     //@K1A
     /**
@@ -281,37 +299,11 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
         this();
 
         as400_ = as400;
-        if( as400 instanceof SecureAS400 )
+        if (as400.isSecure())
             setSecure(true);
-
     }
 
-    //@B4A
-    /**
-    *  Constructs an AS400JDBCDataSource object with the specified signon information
-    *  to use for SSL communications with the system.
-    *  @param serverName The name of the IBM i system.
-    *  @param user The user id.
-    *  @param password The user password.
-       *  @param keyRingNameX The key ring class name to be used for SSL communications with the system.
-       *  @param keyRingPasswordX The password for the key ring class to be used for SSL communications with the system.
-       *  @deprecated  Sslight not supported
-    **/
-    public AS400JDBCDataSource(String serverName, String user, String password,
-                               String keyRingNameX, String keyRingPasswordX)
-    {
-        this();
 
-        setSecure(true);  // @F0M
-
-        as400_ = new SecureAS400(as400_);
-
-        setServerName(serverName);
-        setUser(user);
-        setPassword(password);
-    }
-
-    // @F0A - Added the following constructor to avoid creating some extra objects
     /**
     * Constructs an AS400JDBCDataSource object from the specified Reference object
     * @param reference to retrieve the DataSource properties from
@@ -328,18 +320,12 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
         // set up property change support
         changes_ = new PropertyChangeSupport(this);
 
-    // set up the as400 object
-    if (((String) reference.get(SECURE).getContent()).equalsIgnoreCase(TRUE_)) {
-      isSecure_ = true;
-      as400_ = new SecureAS400();
-
-    } else {
-      isSecure_ = false;
-      as400_ = new AS400();
-    }
+        // set up the as400 object
+        isSecure_ = ((String) reference.get(SECURE).getContent()).equalsIgnoreCase(TRUE_);
+        as400_ = AS400.newInstance(isSecure_);
 
         // must initialize the JDProperties so the property change checks dont get a NullPointerException
-        properties_ = new JDProperties(null, null,null);
+        properties_ = new JDProperties(null, null,null,null);
 
         Properties properties = new Properties();
         sockProps_ = new SocketProperties();
@@ -412,7 +398,7 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
                 properties.put(property, value);
             }
         }
-        properties_ = new JDProperties(properties, null, null);
+        properties_ = new JDProperties(properties, null, null, null);
 
         // get the prompt property and set it back in the as400 object
         String prmpt = properties_.getString(JDProperties.PROMPT);
@@ -470,7 +456,13 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
         return properties_.getString(JDProperties.ACCESS);
     }
      
-    // @C9 new method
+    /**
+     * returns the additional authentication factor.
+     * @return the additional authentication factor
+     */
+    public char[] getAdditionalAuthenticationFactor() { 
+      return properties_.getAdditionalAuthenticationFactor(); 
+    }
     /**
     *  Returns what behaviors of the Toolbox JDBC driver have been overridden.
     *  Multiple behaviors can be overridden in combination by adding 
@@ -568,7 +560,8 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
 
 
     /**
-    *  Returns the database connection.
+    *  Returns the database connection.  If an additional authentication factor is needed for the connection, 
+    *  then setAdditionalAuthenciationFactor must be called immediately before this method. 
     *  @return The connection.
     *  @exception SQLException If a database error occurs.
     **/
@@ -576,10 +569,11 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
     {    
         //if the user asks for the object
         //to be secure, clone a SecureAS400 object; otherwise, clone an AS400 object
-        if (isSecure_ || isSecure())                     //@B4A  //@C2C
-            return getConnection(new SecureAS400(as400_));   //@B4A
-        else                               //@B4A
-            return getConnection(new AS400(as400_));
+    	char[] aaf = properties_.getAdditionalAuthenticationFactor(); 
+    	AS400 newAs400 = AS400.newInstance((isSecure_ || isSecure()), as400_);
+    	newAs400.setAdditionalAuthenticationFactor(aaf);
+    	
+        return getConnection(newAs400);
     }
 
 
@@ -623,7 +617,7 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
 
 
     /**
-    *  Returns the database connection using the specified <i>user</i> and <i>password</i>.
+    *  Returns the database connection using the specified <i>user</i> and <i>password</i> and <i>additionalAuthenticationFactor</i>.
     *  @param user The database user.
     *  @param password The database password.
     *  @param additionalAuthenticationFactor The additional authentication factor, or null if not providing one
@@ -701,14 +695,16 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
 
         //if the user asks for the object
         //to be secure, clone a SecureAS400 object; otherwise, clone an AS400 object
-        if (isSecure_ || isSecure())                                        //@C2A
-        {                                                                   //@C2A
-            as400Object = new SecureAS400(getServerName(), user, password); //@C2A
-        }                                                                   //@C2A
-        else
-        {                                                                //@C2A                                                                   //@C2A     
-            as400Object = new AS400(getServerName(), user, password);       //@C2A
-        }                                                                   //@C2A
+		try
+		{
+		    as400Object = AS400.newInstance((isSecure_ || isSecure()), getServerName(), user, password, additionalAuthenticationFactor);
+		} catch (AS400SecurityException e) {
+			JDError.throwSQLException(this, JDError.EXC_CONNECTION_REJECTED, e);
+			throw new SQLException("PREVENT COMPILER ERROR"); /* Dead code */
+		} catch (IOException e) {
+			JDError.throwSQLException(this, JDError.EXC_CONNECTION_UNABLE, e);
+			throw new SQLException("PREVENT COMPILER ERROR"); /* Dead code */
+		}
 
         try                                                                 //@PDA
         {                                                                   //@PDA
@@ -1566,8 +1562,14 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
     {
       return properties_.getString(JDProperties.QUERY_REPLACE_TRUNCATED_PARAMETER);
     }
-
-    
+   /**
+    * Returns the stay alive setting.  If non-zero, then this
+    * is the number of seconds before a host server ping request is sent
+    * to keep the connection from being dropped because of inactivity. 
+    */
+    public int  getStayAlive() {
+      return properties_.getInt(JDProperties.STAY_ALIVE);
+    }
    /*@D4A*/
     /**                                                               
     *  Returns the mechanism used to implement query timeout. 
@@ -1609,10 +1611,7 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
 
         changes_ = new PropertyChangeSupport(this);
 
-        if (isSecure_)            //@B4A  
-            as400_ = new SecureAS400();         //@B4A
-        else                     //@B4A
-            as400_ = new AS400();
+        as400_ = AS400.newInstance(isSecure_);
 
         // Reinitialize the serverName, user, password, etc.
         if (serialServerName_ != null)
@@ -2202,7 +2201,7 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
      * @param additionalAuthenticationFactor the additional authentication factor, or null if not providing one
      */
     public void setAdditionalAuthenticationFactor(char[] additionalAuthenticationFactor) {
-
+     	properties_.setAdditionalAuthenticationFactor(additionalAuthenticationFactor);
     }
  
       //@AC1
@@ -3798,9 +3797,11 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
             else if (propIndex == JDProperties.USER)
                 setUser(propertyValue);
             else if (propIndex == JDProperties.PASSWORD) {
-              char[] clearPassword = properties_.getClearPassword(); 
+              char[] clearPassword = propertyValue.toCharArray(); 
               setPassword(clearPassword);
               CredentialVault.clearArray(clearPassword);
+              if (JDTrace.isTraceOn()) 
+                  JDTrace.logInformation (this, "Use of password property not recommended:  using setPassword(char[]) instead");  
             } else if (propIndex == JDProperties.SECURE)
                 setSecure(propertyValue.equals(TRUE_) ? true : false);
             else if (propIndex == JDProperties.KEEP_ALIVE)
@@ -5168,6 +5169,28 @@ implements DataSource, Referenceable, Serializable, Cloneable //@PDC 550
             JDTrace.logInformation (this, property + ": " + goal);
     }
 
+    /**
+     * Sets the stay alive setting.  If non-zero, then this
+     * is the number of seconds before a host server ping request is sent
+     * to keep the connection from being dropped because of inactivity. 
+     */
+    public void setStayAlive(int seconds)
+    {
+        String property = "stayAlive";
+
+        Integer oldValue = Integer.valueOf(getQueryOptimizeGoal());
+        Integer newValue = Integer.valueOf(seconds);
+
+        properties_.setString(JDProperties.STAY_ALIVE, newValue.toString());
+
+        changes_.firePropertyChange(property, oldValue, newValue);
+
+        if (JDTrace.isTraceOn()) 
+            JDTrace.logInformation (this, property + ": " + seconds);
+    }
+    
+    
+    
     //@550
     /**
     * Sets the storage limit in megabytes, that should be used for statements executing a query in a connection.

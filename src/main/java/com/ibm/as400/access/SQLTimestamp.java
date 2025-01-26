@@ -34,10 +34,6 @@ final class SQLTimestamp
 extends SQLDataBase
 {
     static final String copyright2 = "Copyright (C) 1997-2013 International Business Machines Corporation and others.";
-    static boolean jdk14 = false;
-    static {
-      jdk14 = JVMInfo.isJDK14();
-    }
 
     // Private data.
     private int                     year_;
@@ -206,8 +202,7 @@ extends SQLDataBase
             Timestamp ts = null;//@dat1
             try //@dat1
             {
-              long millis;
-              if (jdk14) { millis =calendar.getTimeInMillis(); } else { millis = calendar.getTime().getTime(); }
+                long millis = calendar.getTimeInMillis();
                 if (picos % 1000 == 0) {   //@H3A
                   ts = new Timestamp(millis); //@dat1
                   ts.setNanos((int)(picos / 1000)); 
@@ -248,7 +243,7 @@ extends SQLDataBase
         return timestampToString(ts, calendar, -1, 26, settings);             // @F4C
     }
 
-   /* ifdef JDBC42
+/* ifdef JDBC42 */
   public static String localDateTimeToStringTrimTrailingZeros(
       java.time.LocalDateTime ldt, Calendar calendar0,
       SQLConversionSettings settings) {
@@ -257,12 +252,7 @@ extends SQLDataBase
 
     calendar.set(ldt.getYear(), ldt.getMonthValue() -1 , ldt.getDayOfMonth(),
         ldt.getHour(), ldt.getMinute(), ldt.getSecond());
-    long millis;
-    if (jdk14) {
-      millis = calendar.getTimeInMillis();
-    } else {
-      millis = calendar.getTime().getTime();
-    }
+    long millis = calendar.getTimeInMillis();
 
     Timestamp ts = new Timestamp(millis);
     ts.setNanos(ldt.getNano());
@@ -272,7 +262,7 @@ extends SQLDataBase
 
     return tsString;
   }
- endif */ 
+/* endif */ 
     
     /**
      * Convert a timestamp to a string and get rid of trailing zeros. 
@@ -537,7 +527,7 @@ extends SQLDataBase
           picos_  = ts.getPicos();
           length_ = ts.getLength(); 
         }
-/* ifdef JDBC42
+/* ifdef JDBC42 */
         else if(object instanceof java.time.LocalDateTime)
         {
             java.time.LocalDateTime ts = ((java.time.LocalDateTime) object);
@@ -551,7 +541,7 @@ extends SQLDataBase
            
         }
 
- endif */ 
+/* endif */ 
         else {
           if (JDTrace.isTraceOn()) {
               if (object == null) { 
@@ -733,8 +723,7 @@ extends SQLDataBase
 
         calendar.set(year_, month_, day_, 0, 0, 0);
         calendar.set(Calendar.MILLISECOND, 0);      //@KBA  added per JTOpen Bug 3818.  According to java.sql.Date, the milliseconds also need to be 'normalized' to zero.
-        long millis;
-        if (jdk14) { millis =calendar.getTimeInMillis(); } else { millis = calendar.getTime().getTime(); }
+        long millis = calendar.getTimeInMillis();
         return new Date(millis);
     }
 
@@ -772,8 +761,7 @@ extends SQLDataBase
         truncated_ = 0; outOfBounds_ = false;
         Calendar calendar = AS400Calendar.getGregorianInstance();
         calendar.set(year_, month_, day_, hour_, minute_, second_);
-        long millis;
-        if (jdk14) { millis =calendar.getTimeInMillis(); } else { millis = calendar.getTime().getTime(); }
+        long millis = calendar.getTimeInMillis();
         if (picos_ % 1000 == 0) { 
           Timestamp ts = new Timestamp (millis);
           ts.setNanos((int)(picos_ / 1000));
@@ -817,8 +805,7 @@ extends SQLDataBase
         /* 
         Calendar calendar = AS400Calendar.getGMTInstance();
         calendar.set(year_, month_, day_, hour_, minute_, second_);
-        long millis;
-        if (jdk14) { millis =calendar.getTimeInMillis(); } else { millis = calendar.getTime().getTime(); }
+        long millis = calendar.getTimeInMillis();
     if (picos_ % 1000 == 0) {
       Timestamp ts = new Timestamp(millis);
       ts.setNanos((int)(picos_ / 1000));
@@ -844,8 +831,7 @@ extends SQLDataBase
         }
 
         calendar.set(0, 0, 0, hour_, minute_, second_);
-        long millis;
-        if (jdk14) { millis =calendar.getTimeInMillis(); } else { millis = calendar.getTime().getTime(); }
+        long millis = calendar.getTimeInMillis();
         return new Time(millis);
     }
 
@@ -859,8 +845,7 @@ extends SQLDataBase
         }
 
         calendar.set(year_, month_, day_, hour_, minute_, second_);
-        long millis;
-        if (jdk14) { millis =calendar.getTimeInMillis(); } else { millis = calendar.getTime().getTime(); }
+        long millis = calendar.getTimeInMillis();
     if (picos_ % 1000 == 0) {
       Timestamp ts = new Timestamp(millis);
       ts.setNanos((int)(picos_ / 1000));

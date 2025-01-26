@@ -46,11 +46,11 @@ import java.util.Map;
 import java.util.Hashtable;             //@G4A
 import java.util.Vector;
 /* endif */ 
-/* ifdef JDBC42
+/* ifdef JDBC42 */
 import java.sql.SQLType; 
 import java.sql.JDBCType; 
 import java.sql.SQLFeatureNotSupportedException;
-endif */
+/* endif */ 
 
 
 /**
@@ -368,8 +368,9 @@ implements CallableStatement
     throws SQLException
     {
         //@array3 implement this method
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -419,6 +420,10 @@ implements CallableStatement
             Array value = (data == null) ? null : data.getArray();
             testDataTruncation(parameterIndex, data, true);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -460,8 +465,9 @@ implements CallableStatement
     public BigDecimal getBigDecimal(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -504,7 +510,12 @@ implements CallableStatement
             BigDecimal value = (data == null) ? null : data.getBigDecimal(-1);
             testDataTruncation(parameterIndex, data, true);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
+
     }
 
     /**
@@ -532,8 +543,9 @@ implements CallableStatement
         if(scale < 0)
             JDError.throwSQLException(this, JDError.EXC_SCALE_INVALID,""+scale);
 
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -576,7 +588,12 @@ implements CallableStatement
             BigDecimal value = (data == null) ? null : data.getBigDecimal(scale);
             testDataTruncation(parameterIndex, data, true);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
+
     }
 
     //@G4A JDBC 3.0
@@ -615,8 +632,9 @@ implements CallableStatement
     public Blob getBlob(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -665,6 +683,10 @@ implements CallableStatement
             Blob value = (data == null) ? null : data.getBlob();
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -709,8 +731,9 @@ implements CallableStatement
     public boolean getBoolean(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -754,6 +777,10 @@ implements CallableStatement
             boolean value = (data == null) ? false : data.getBoolean();
             testDataTruncation(parameterIndex, data, true);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -806,8 +833,9 @@ implements CallableStatement
     public byte getByte(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -850,6 +878,10 @@ implements CallableStatement
             byte value = (data == null) ? 0 : data.getByte();
             testDataTruncation(parameterIndex, data, true);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -896,8 +928,9 @@ implements CallableStatement
     public byte[] getBytes(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -941,6 +974,10 @@ implements CallableStatement
             byte[] value = (data == null) ? null : data.getBytes();
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -980,8 +1017,9 @@ implements CallableStatement
     public Clob getClob(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -1032,6 +1070,10 @@ implements CallableStatement
             Clob value = (data == null) ? null : data.getClob();
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -1096,8 +1138,9 @@ implements CallableStatement
         if(calendar == null)
             JDError.throwSQLException(this, JDError.EXC_ATTRIBUTE_VALUE_INVALID);
 
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -1152,6 +1195,10 @@ implements CallableStatement
             Date value = (data == null) ? null : data.getDate(calendar);
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -1214,8 +1261,9 @@ implements CallableStatement
     public double getDouble(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -1258,6 +1306,10 @@ implements CallableStatement
             double value = (data == null) ? 0 : data.getDouble();
             testDataTruncation(parameterIndex, data, true);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -1297,8 +1349,9 @@ implements CallableStatement
     public float getFloat(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -1341,6 +1394,10 @@ implements CallableStatement
             float value = (data == null) ? 0 : data.getFloat();
             testDataTruncation(parameterIndex, data, true);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -1380,8 +1437,9 @@ implements CallableStatement
     public int getInt(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -1422,6 +1480,10 @@ implements CallableStatement
             int value = (data == null) ? 0 : data.getInt();
             testDataTruncation(parameterIndex, data, true);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -1471,8 +1533,9 @@ implements CallableStatement
     public long getLong(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -1515,6 +1578,10 @@ implements CallableStatement
             long value = (data == null) ? 0 : data.getLong();
             testDataTruncation(parameterIndex, data, true);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -1566,8 +1633,9 @@ implements CallableStatement
     public Object getObject(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -1609,6 +1677,10 @@ implements CallableStatement
             Object value = (data == null) ? null : data.getObject();
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -1730,8 +1802,9 @@ implements CallableStatement
     public short getShort(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -1774,6 +1847,10 @@ implements CallableStatement
             short value = (data == null) ? 0 : data.getShort();
             testDataTruncation(parameterIndex, data, true);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -1813,8 +1890,9 @@ implements CallableStatement
     public String getString(int parameterIndex)
     throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -1858,6 +1936,10 @@ implements CallableStatement
             String value = (data == null) ? null : data.getString();
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -1924,8 +2006,9 @@ implements CallableStatement
         if(calendar == null)
             JDError.throwSQLException(this, JDError.EXC_ATTRIBUTE_VALUE_INVALID);
 
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -1981,6 +2064,10 @@ implements CallableStatement
             Time value = (data == null) ? null : data.getTime(calendar);
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -2070,8 +2157,9 @@ implements CallableStatement
         if(calendar == null)
             JDError.throwSQLException(this, JDError.EXC_ATTRIBUTE_VALUE_INVALID);
 
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -2129,6 +2217,10 @@ implements CallableStatement
             Timestamp value = (data == null) ? null : data.getTimestamp(calendar);
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -2190,7 +2282,9 @@ implements CallableStatement
                                 the requested conversion is not valid.
     **/
     public URL getURL(int parameterIndex) throws SQLException {
-    synchronized (internalLock_) {
+        try 
+        {
+            internalLock.lock();
       checkOpen();
 
       SQLData data = null;
@@ -2247,7 +2341,11 @@ implements CallableStatement
       } else {
         return null;
       }
-    }
+        } 
+        finally
+        {
+            internalLock.unlock();
+        }
   }
 
     //@G4A  JDBC 3.0
@@ -2324,8 +2422,9 @@ implements CallableStatement
                                      int scale)
     throws SQLException
     {
-        synchronized(internalLock_)
-        {                                            // @E1A
+        try 
+        {
+            internalLock.lock();
             checkOpen();
 
             // Check if the parameter index refers to the return value parameter.              @E2A
@@ -2358,6 +2457,10 @@ implements CallableStatement
 
             registeredTypes_[parameterIndex-1] = sqlType;
             registered_[parameterIndex-1] = true;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -3282,10 +3385,15 @@ implements CallableStatement
     public boolean wasNull()
     throws SQLException
     {
-        synchronized(internalLock_)
-        {                                            // @E1A
+        try 
+        {
+            internalLock.lock();
             checkOpen();
             return wasNull_;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
     
@@ -3310,8 +3418,9 @@ implements CallableStatement
      */
     public Reader getCharacterStream(int parameterIndex) throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -3351,6 +3460,10 @@ implements CallableStatement
             Reader value = (data == null) ? null : data.getCharacterStream();
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -3389,8 +3502,9 @@ implements CallableStatement
     public Reader getNCharacterStream(int parameterIndex) throws SQLException
     {
 
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -3430,6 +3544,10 @@ implements CallableStatement
             Reader value = (data == null) ? null : data.getNCharacterStream();
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -3473,8 +3591,9 @@ implements CallableStatement
 /* ifdef JDBC40 */
     public NClob getNClob(int parameterIndex) throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -3524,6 +3643,10 @@ implements CallableStatement
             NClob value = (data == null) ? null : data.getNClob();
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 /* endif */ 
@@ -3572,8 +3695,9 @@ implements CallableStatement
      */
     public String getNString(int parameterIndex) throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -3613,6 +3737,10 @@ implements CallableStatement
             String value = (data == null) ? null : data.getNString();
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 
@@ -3658,8 +3786,9 @@ implements CallableStatement
 /* ifdef JDBC40 */
     public RowId getRowId(int parameterIndex) throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -3699,6 +3828,10 @@ implements CallableStatement
             RowId value = (data == null) ? null : data.getRowId();
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 /* endif */ 
@@ -3738,8 +3871,9 @@ implements CallableStatement
 /* ifdef JDBC40 */
     public SQLXML getSQLXML(int parameterIndex) throws SQLException
     {
-        synchronized(internalLock_)
+        try 
         {
+            internalLock.lock();
             checkOpen();
 
             SQLData data = null;
@@ -3779,6 +3913,10 @@ implements CallableStatement
             SQLXML value = (data == null) ? null : data.getSQLXML();
             testDataTruncation(parameterIndex, data, false);
             return value;
+        } 
+        finally
+        {
+            internalLock.unlock();
         }
     }
 /* endif */ 
@@ -3975,7 +4113,7 @@ implements CallableStatement
     {
         if(JDTrace.isTraceOn())
         {  
-            JDTrace.logInformation(this, "setClob()"); 
+            JDTrace.logInformation(this, "setClob(String,Clob)"); 
             if(x == null) 
                 JDTrace.logInformation(this, "parameter index: " + findParameterIndex(parameterName) + " value: NULL");
             else JDTrace.logInformation(this, "parameter index: " + findParameterIndex(parameterName) + " length: " + x.length());
@@ -4008,7 +4146,7 @@ implements CallableStatement
     {
         if(JDTrace.isTraceOn())
         {  
-            JDTrace.logInformation(this, "setClob()"); 
+            JDTrace.logInformation(this, "setClob(String,Reader,long)"); 
             if(reader == null) 
                 JDTrace.logInformation(this, "parameter index: " + findParameterIndex(parameterName) + " value: NULL");
             else JDTrace.logInformation(this, "parameter index: " + findParameterIndex(parameterName) + " length: " + length);
@@ -4181,7 +4319,7 @@ implements CallableStatement
     {
         if(JDTrace.isTraceOn())
         {  
-            JDTrace.logInformation(this, "setClob()"); 
+            JDTrace.logInformation(this, "setSQLXML()"); 
             if(xmlObject == null) 
                 JDTrace.logInformation(this, "parameter index: " + findParameterIndex(parameterName) + " value: NULL");
             else JDTrace.logInformation(this, "parameter index: " + findParameterIndex(parameterName) + " length: " + xmlObject.toString().length());
@@ -4535,7 +4673,7 @@ implements CallableStatement
         return getSQLXML(parameterIndex);
 /* endif */ 
         
-/* ifdef JDBC42 
+/* ifdef JDBC42 */
       } else if (type == java.time.LocalTime.class){
         Time time = getTime(parameterIndex);
         if (time != null ) return time.toLocalTime();
@@ -4548,7 +4686,7 @@ implements CallableStatement
         Timestamp ts = getTimestamp(parameterIndex);
         if (ts != null) return ts.toLocalDateTime();
         return null; 
-endif */
+/* endif */ 
       } else if (type == Object.class){
         return getObject(parameterIndex);
       }
@@ -4601,24 +4739,24 @@ endif */
      */
     
     static int mapSQLTypeCS(
-        /* ifdef JDBC42        
+/* ifdef JDBC42 */
         SQLType  
-  endif*/ 
-  /* ifndef JDBC42 */
+/* endif */ 
+/* ifndef JDBC42 
   Object
-  /* endif */
+ endif */ 
         targetSqlType ) throws SQLException {
-       /* ifdef JDBC42 
+/* ifdef JDBC42 */
          
       if (targetSqlType instanceof JDBCType) {
         return targetSqlType.getVendorTypeNumber(); 
       }
         throw new SQLFeatureNotSupportedException("targetSqlType="+targetSqlType);    
    
-        endif */
-      /* ifndef JDBC42 */
+/* endif */ 
+/* ifndef JDBC42 
          return 0; 
-      /* endif */ 
+ endif */ 
     }
     
     
@@ -4654,12 +4792,12 @@ endif */
      */
     public void setObject(String parameterName,
                            Object x,
-                           /* ifdef JDBC42        
+/* ifdef JDBC42 */
                            SQLType  
-                     endif*/ 
-                     /* ifndef JDBC42 */
+/* endif */ 
+/* ifndef JDBC42 
                      Object
-                     /* endif */
+ endif */ 
                            targetSqlType,
                            int scaleOrLength)                    throws SQLException
            {
@@ -4682,12 +4820,12 @@ endif */
 
    public void setObject(String parameterName,
                            Object x,
-/* ifdef JDBC42        
+/* ifdef JDBC42 */
                            SQLType  
-endif*/ 
-/* ifndef JDBC42 */
+/* endif */ 
+/* ifndef JDBC42 
                      Object
-/* endif */
+ endif */ 
                            targetSqlType)
                     throws SQLException
                     {
@@ -4718,12 +4856,12 @@ endif*/
     * error occurs or this method is called on a closed CallableStatement
     */
     public void registerOutParameter(int parameterIndex,
-/* ifdef JDBC42        
+/* ifdef JDBC42 */
         SQLType  
-endif*/ 
-/* ifndef JDBC42 */
+/* endif */ 
+/* ifndef JDBC42 
         Object
-/* endif */
+ endif */ 
                                       sqlType)
                                throws SQLException{
       int intType = mapSQLTypeCS(sqlType);
@@ -4749,12 +4887,12 @@ endif*/
      */
     
     public void registerOutParameter(int parameterIndex,
-        /* ifdef JDBC42        
+/* ifdef JDBC42 */
         SQLType  
-endif*/ 
-/* ifndef JDBC42 */
+/* endif */ 
+/* ifndef JDBC42 
         Object
-/* endif */
+ endif */ 
                                       sqlType,
                                       int scale)
                                throws SQLException {
@@ -4788,12 +4926,12 @@ endif*/
  * access error occurs or this method is called on a closed CallableStatement
  */
     public void registerOutParameter(int parameterIndex,
-/* ifdef JDBC42        
+/* ifdef JDBC42 */
         SQLType  
-endif*/ 
-/* ifndef JDBC42 */
+/* endif */ 
+/* ifndef JDBC42 
         Object
-/* endif */
+ endif */ 
                                       sqlType,
                                       String typeName)
                                throws SQLException {
@@ -4821,12 +4959,12 @@ endif*/
  * on a closed CallableStatement
  */
    public void registerOutParameter(String parameterName,
-       /* ifdef JDBC42        
+/* ifdef JDBC42 */
        SQLType  
-endif*/ 
-/* ifndef JDBC42 */
+/* endif */ 
+/* ifndef JDBC42 
        Object
-/* endif */
+ endif */ 
                                       sqlType)
                                throws SQLException {
      int intType = mapSQLTypeCS(sqlType);
@@ -4852,12 +4990,12 @@ endif*/
     * on a closed CallableStatement
     */
   public void registerOutParameter(String parameterName,
-      /* ifdef JDBC42        
+/* ifdef JDBC42 */
       SQLType  
-endif*/ 
-/* ifndef JDBC42 */
+/* endif */ 
+/* ifndef JDBC42 
       Object
-/* endif */
+ endif */ 
                                       sqlType,
                                       int scale)
                                throws SQLException {
@@ -4896,12 +5034,12 @@ endif*/
    * on a closed CallableStatement
    */
   public void registerOutParameter(String parameterName,
-      /* ifdef JDBC42        
+/* ifdef JDBC42 */
       SQLType  
-endif*/ 
-/* ifndef JDBC42 */
+/* endif */ 
+/* ifndef JDBC42 
       Object
-/* endif */
+ endif */ 
                                       sqlType,
                                       String typeName)
                                throws SQLException
